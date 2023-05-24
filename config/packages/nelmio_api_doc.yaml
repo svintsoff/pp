@@ -1,0 +1,9 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: PathProject
+            description: The project makes it possible for companies to store all the information about the products they develop and their development departments in a single place, differentiating access to it between different user levels
+            version: 1.0.0
+    areas: # to filter documented areas
+        path_patterns:
+            - ^/api(?!/doc$) # Accepts routes under /api except /api/doc
