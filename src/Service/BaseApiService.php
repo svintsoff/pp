@@ -7,28 +7,47 @@ use App\Service\Core\ApiInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 
 abstract class BaseApiService implements ApiInterface
 {
     public string $entity;
     public string $rightPostfix;
 
-    private Request $request;
     private SessionInterface $session;
     private EntityRepository $repository;
 
+    private array $normalizers;
+    private Serializer $serializer;
+
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly RequestStack $requestStack,
-        private readonly ResponseHelper $responseHelper
+        private readonly RequestStack           $requestStack,
+        private readonly ResponseHelper         $responseHelper,
     )
     {
-        $this->request    = $this->requestStack->getCurrentRequest();
-        $this->session    = $this->request->getSession();
+        $this->session = $this->requestStack->getCurrentRequest()->getSession();
         $this->repository = $this->entityManager->getRepository($this->entity);
+
+        $this->normalizers = [new ObjectNormalizer()];
+        $this->serializer = new Serializer($this->normalizers, []);
+    }
+
+    public function one(int $projectId): JsonResponse
+    {
+        // if ($this->session->get('logged') != '1') return $this->responseHelper->unauthorized('unauthorized');
+
+        $object = $this->repository->find($projectId);
+
+        if (!$object) return $this->responseHelper->notFound('unknown id');
+
+        $data = $this->serializer->normalize($object);
+
+        return $this->responseHelper->ok($data);
     }
 
     public function remove(int $projectId): JsonResponse

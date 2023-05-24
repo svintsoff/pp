@@ -11,7 +11,7 @@ class ResponseHelper
         return $this;
     }
 
-    public function ok(array|string $data = []): JsonResponse
+    public function ok(mixed $data = []): JsonResponse
     {
         return new JsonResponse($data, 200);
     }
