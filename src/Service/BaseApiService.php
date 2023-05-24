@@ -6,6 +6,7 @@ use App\Helper\ResponseHelper;
 use App\Service\Core\ApiInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Symfony\Component\HttpFoundation\InputBag;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -16,6 +17,7 @@ abstract class BaseApiService implements ApiInterface
 {
     public string $entity;
     public string $rightPostfix;
+    private InputBag $request;
 
     private SessionInterface $session;
     private EntityRepository $repository;
@@ -30,15 +32,38 @@ abstract class BaseApiService implements ApiInterface
     )
     {
         $this->session = $this->requestStack->getCurrentRequest()->getSession();
+        $this->request = $this->requestStack->getCurrentRequest()->request;
         $this->repository = $this->entityManager->getRepository($this->entity);
 
         $this->normalizers = [new ObjectNormalizer()];
         $this->serializer = new Serializer($this->normalizers, []);
     }
 
+    public function create(): JsonResponse
+    {
+        $right = 'right_create_' . $this->rightPostfix;
+
+        if ($this->session->get('logged') != '1') return $this->responseHelper->unauthorized('unauthorized');
+        if ($this->session->get($right) != '1') return $this->responseHelper->forbidden('forbidden');
+
+        $data = $this->request->all();
+
+        $object = new ($this->entity);
+
+        foreach ($data as $key => $value) {
+            $method = 'set' . ucfirst($key);
+            $object->$method($value);
+        }
+
+        $this->entityManager->persist($object);
+        $this->entityManager->flush();
+
+        return $this->responseHelper->ok();
+    }
+
     public function all(): JsonResponse
     {
-        // if ($this->session->get('logged') != '1') return $this->responseHelper->unauthorized('unauthorized');
+        if ($this->session->get('logged') != '1') return $this->responseHelper->unauthorized('unauthorized');
 
         $objects = $this->repository->findAll();
 

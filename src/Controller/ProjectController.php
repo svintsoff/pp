@@ -16,6 +16,31 @@ class ProjectController extends BaseApiService
     public string $entity = Project::class;
     public string $rightPostfix = 'project';
 
+    #[Route('/api/projects', name: 'project_create', methods: 'POST')]
+    #[OA\Response(
+        response: 200,
+        description: 'Success. Returns an empty array if deleting was successful',
+    )]
+    #[OA\Response(
+        response: 401,
+        description: 'Need to authorize a User. Returns a string with error message',
+    )]
+    #[OA\Response(
+        response: 403,
+        description: 'User doesnt have necessary rights. Returns a string with error message',
+    )]
+    #[OA\Parameter(
+        name: 'name',
+        description: 'The name of the project',
+        in: 'query',
+        schema: new OA\Schema(type: 'string')
+    )]
+    #[OA\Tag(name: 'Projects')]
+    public function createProject(): JsonResponse
+    {
+        return $this->create();
+    }
+
     #[Route('/api/projects', name: 'project_all', methods: 'GET')]
     #[OA\Response(
         response: 200,
