@@ -8,7 +8,7 @@ interface ApiInterface
 {
     //public function create(): array;
     // public function edit(): array;
-    public function remove(): JsonResponse;
+    public function remove(int $projectId): JsonResponse;
     // public function all(): array;
     // public function one(): array;
 }

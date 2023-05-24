@@ -16,7 +16,7 @@ class ProjectController extends BaseApiService
     public string $entity = Project::class;
     public string $rightPostfix = 'project';
 
-    #[Route('/api/projects', name: 'project_delete', methods: 'DELETE')]
+    #[Route('/api/projects/{id}', name: 'project_delete', methods: 'DELETE')]
     #[OA\Response(
         response: 200,
         description: 'Success. Returns an empty array if deleting was successful',
@@ -40,8 +40,8 @@ class ProjectController extends BaseApiService
         schema: new OA\Schema(type: 'string')
     )]
     #[OA\Tag(name: 'Projects')]
-    public function removeProject(): JsonResponse
+    public function removeProject(int $id): JsonResponse
     {
-        return $this->remove();
+        return $this->remove($id);
     }
 }

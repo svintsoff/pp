@@ -31,16 +31,14 @@ abstract class BaseApiService implements ApiInterface
         $this->repository = $this->entityManager->getRepository($this->entity);
     }
 
-    public function remove(): JsonResponse
+    public function remove(int $projectId): JsonResponse
     {
         $right = 'right_delete_' . $this->rightPostfix;
 
         if ($this->session->get('logged') != '1') return $this->responseHelper->unauthorized('unauthorized');
         if ($this->session->get($right) != '1') return $this->responseHelper->forbidden('forbidden');
 
-        $id = $this->request->request->get('id');
-
-        $object = $this->repository->find($id);
+        $object = $this->repository->find($projectId);
 
         if (!$object) return $this->responseHelper->notFound('unknown id');
 
