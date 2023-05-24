@@ -87,6 +87,29 @@ abstract class BaseApiService implements ApiInterface
         return $this->responseHelper->ok($data);
     }
 
+    public function update(int $projectId): JsonResponse
+    {
+        $right = 'right_update_' . $this->rightPostfix;
+
+        if ($this->session->get('logged') != '1') return $this->responseHelper->unauthorized('unauthorized');
+        if ($this->session->get($right) != '1') return $this->responseHelper->forbidden('forbidden');
+
+        $data = $this->request->all();
+
+        $object = $this->repository->find($projectId);
+
+        if (!$object) return $this->responseHelper->notFound('unknown id');
+
+        foreach ($data as $key => $value) {
+            $method = 'set' . ucfirst($key);
+            $object->$method($value);
+        }
+
+        $this->entityManager->flush();
+
+        return $this->responseHelper->ok();
+    }
+
     public function remove(int $projectId): JsonResponse
     {
         $right = 'right_delete_' . $this->rightPostfix;
