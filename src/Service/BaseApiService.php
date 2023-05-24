@@ -9,7 +9,6 @@ use Doctrine\ORM\EntityRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
@@ -37,9 +36,22 @@ abstract class BaseApiService implements ApiInterface
         $this->serializer = new Serializer($this->normalizers, []);
     }
 
-    public function one(int $projectId): JsonResponse
+    public function all(): JsonResponse
     {
         // if ($this->session->get('logged') != '1') return $this->responseHelper->unauthorized('unauthorized');
+
+        $objects = $this->repository->findAll();
+
+        if (!$objects) return $this->responseHelper->notFound('no data');
+
+        $data = $this->serializer->normalize($objects);
+
+        return $this->responseHelper->ok($data);
+    }
+
+    public function one(int $projectId): JsonResponse
+    {
+        if ($this->session->get('logged') != '1') return $this->responseHelper->unauthorized('unauthorized');
 
         $object = $this->repository->find($projectId);
 
